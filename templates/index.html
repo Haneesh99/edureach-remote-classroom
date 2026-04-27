@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('app_name') }} - {{ get_text('tagline') }}{% endblock %}
+
+{% block body %}
+<div class="landing-container">
+    <header class="landing-header">
+        <h1>{{ get_text('app_name') }}</h1>
+        <nav class="landing-nav">
+            <a href="{{ url_for('login') }}">{{ get_text('login') }}</a>
+            <a href="{{ url_for('signup') }}">{{ get_text('signup') }}</a>
+        </nav>
+    </header>
+
+    <section class="landing-hero">
+        <div class="landing-hero-content">
+            <h2>{{ get_text('app_name') }} — {{ get_text('tagline') }}</h2>
+            <p>A comprehensive remote learning platform connecting teachers and students. Access course materials, submit assignments, take quizzes, track attendance, and receive personalized learning recommendations.</p>
+            <div class="landing-cta">
+                <a href="{{ url_for('signup') }}" class="btn btn-primary">{{ get_text('signup') }} as {{ get_text('student') }}</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-outline">{{ get_text('signup') }} as {{ get_text('teacher') }}</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-features">
+        <h3>Platform Features</h3>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">📚</div>
+                <h4>Course Management</h4>
+                <p>Organized course content with materials, assignments, and announcements in one place.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📝</div>
+                <h4>Assignments & Submissions</h4>
+                <p>Easy assignment creation, submission, and grading with file uploads.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">❓</div>
+                <h4>Interactive Quizzes</h4>
+                <p>Multiple-choice quizzes with instant scoring and personalized recommendations.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <h4>Progress Tracking</h4>
+                <p>Visual badges, attendance tracking, and performance analytics.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🌐</div>
+                <h4>Multi-Language Support</h4>
+                <p>Available in English, Telugu, and Hindi for wider accessibility.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🏆</div>
+                <h4>Achievement System</h4>
+                <p>Earn badges for milestones like perfect attendance and top performance.</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

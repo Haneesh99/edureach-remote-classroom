@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.name }} - {{ get_text('app_name') }}{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1>{{ get_text('app_name') }}</h1>
+        <span class="tagline">{{ get_text('tagline') }}</span>
+    </div>
+    <ul class="sidebar-nav">
+        {% if user.is_teacher() %}
+        <li><a href="{{ url_for('teacher_dashboard') }}"><i class="fas fa-home"></i> {{ get_text('dashboard') }}</a></li>
+        {% else %}
+        <li><a href="{{ url_for('student_dashboard') }}"><i class="fas fa-home"></i> {{ get_text('dashboard') }}</a></li>
+        {% endif %}
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> {{ get_text('logout') }}</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.name[0] | upper }}</div>
+            <div class="user-details">
+                <div class="user-name">{{ user.name }}</div>
+                <div class="user-role">{{ get_text(user.role) }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="language-selector">
+        <select id="language-selector">
+            <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+            <option value="te" {% if lang == 'te' %}selected{% endif %}>తెలుగు</option>
+            <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी</option>
+        </select>
+    </div>
+
+    <div class="page-header">
+        <h2>{{ course.name }}</h2>
+        <p>{{ course.subject }} | {{ get_text('teacher') }}: {{ teacher.name }}</p>
+    </div>
+
+    {% if user.is_teacher() and user.id == course.teacher_id %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('announcements') }}</h3>
+        </div>
+        <form method="POST" action="{{ url_for('post_announcement', course_id=course.id) }}">
+            <div class="form-group">
+                <label for="announcement_message">{{ get_text('message') }}</label>
+                <textarea id="announcement_message" name="message" class="form-control" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ get_text('post_announcement') }}</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if announcements %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('announcements') }}</h3>
+        </div>
+        {% for announcement in announcements %}
+        <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+            <p>{{ announcement.message }}</p>
+            <small style="color: var(--text-light);">{{ announcement.posted_at }}</small>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('materials') }}</h3>
+            {% if user.is_teacher() and user.id == course.teacher_id %}
+            <button class="btn btn-sm btn-primary" onclick="document.getElementById('upload-form').style.display='block'">{{ get_text('upload_material') }}</button>
+            {% endif %}
+        </div>
+        
+        {% if user.is_teacher() and user.id == course.teacher_id %}
+        <form id="upload-form" method="POST" action="{{ url_for('upload_material', course_id=course.id) }}" enctype="multipart/form-data" style="display: none; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+            <div class="form-group">
+                <label class="file-upload" style="display: block;">
+                    <input type="file" name="file" required>
+                    <span class="file-upload-text">{{ get_text('file') }}</span>
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ get_text('upload_material') }}</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('upload-form').style.display='none'">{{ get_text('cancel') }}</button>
+        </form>
+        {% endif %}
+        
+        {% if materials %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{{ get_text('file') }}</th>
+                        <th>{{ get_text('uploaded_at') }}</th>
+                        <th>{{ get_text('action') | default('Action') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                    <tr>
+                        <td>{{ material.filename }}</td>
+                        <td>{{ material.uploaded_at }}</td>
+                        <td><a href="{{ url_for('download', filename=material.filename) }}" class="btn btn-sm btn-outline">{{ get_text('download') }}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-content">
+            <p>{{ get_text('no_materials') }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('assignments') }}</h3>
+            {% if user.is_teacher() and user.id == course.teacher_id %}
+            <button class="btn btn-sm btn-primary" onclick="document.getElementById('assignment-form').style.display='block'">{{ get_text('create_assignment') }}</button>
+            {% endif %}
+        </div>
+        
+        {% if user.is_teacher() and user.id == course.teacher_id %}
+        <form id="assignment-form" method="POST" action="{{ url_for('create_assignment_route', course_id=course.id) }}" style="display: none; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+            <div class="form-group">
+                <label for="title">{{ get_text('title') }}</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="description">{{ get_text('description') }}</label>
+                <textarea id="description" name="description" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="deadline">{{ get_text('deadline') }}</label>
+                <input type="date" id="deadline" name="deadline" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ get_text('create_assignment') }}</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('assignment-form').style.display='none'">{{ get_text('cancel') }}</button>
+        </form>
+        {% endif %}
+        
+        {% if assignments %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{{ get_text('title') }}</th>
+                        <th>{{ get_text('description') }}</th>
+                        <th>{{ get_text('deadline') }}</th>
+                        {% if user.is_student() %}
+                        <th>{{ get_text('action') | default('Action') }}</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>{{ assignment.title }}</td>
+                        <td>{{ assignment.description or '-' }}</td>
+                        <td>{{ assignment.deadline }}</td>
+                        {% if user.is_student() %}
+                        <td>
+                            {% if assignment.id in submitted_assignments %}
+                            <span style="color: var(--primary-color);">{{ get_text('submitted') | default('Submitted') }}</span>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" enctype="multipart/form-data" style="display: flex; gap: 8px; align-items: center;">
+                                <input type="file" name="file" required style="font-size: 0.85rem;">
+                                <button type="submit" class="btn btn-sm btn-primary">{{ get_text('submit') }}</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-content">
+            <p>{{ get_text('no_assignments') }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if user.is_teacher() and user.id == course.teacher_id %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('mark_attendance') }}</h3>
+        </div>
+        <form method="POST" action="{{ url_for('mark_attendance', course_id=course.id) }}">
+            <div class="form-group">
+                <label for="attendance_date">{{ get_text('date') | default('Date') }}</label>
+                <input type="date" id="attendance_date" name="date" class="form-control" required value="{{ today }}">
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{{ get_text('student') }}</th>
+                            <th>{{ get_text('present') }}</th>
+                            <th>{{ get_text('absent') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.name }}</td>
+                            <td><input type="radio" name="student_{{ student.id }}" value="present" required></td>
+                            <td><input type="radio" name="student_{{ student.id }}" value="absent" required></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 16px;">{{ get_text('save') }}</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if user.is_student() %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('quiz') }}</h3>
+        </div>
+        <div style="text-align: center; padding: 40px;">
+            <p style="margin-bottom: 24px;">{{ get_text('take_quiz') }} {{ get_text('for') | default('for') }} {{ course.name }}</p>
+            <a href="{{ url_for('quiz', course_id=course.id) }}" class="btn btn-primary">{{ get_text('take_quiz') }}</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('signup') }} - {{ get_text('app_name') }}{% endblock %}
+
+{% block body %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>{{ get_text('signup') }}</h1>
+            <p>Create your {{ get_text('app_name') }} account</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('signup') }}">
+            <div class="form-group">
+                <label for="name">{{ get_text('name') }}</label>
+                <input type="text" id="name" name="name" class="form-control" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="email">{{ get_text('email') }}</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">{{ get_text('password') }}</label>
+                <input type="password" id="password" name="password" class="form-control" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="role">{{ get_text('role') }}</label>
+                <select id="role" name="role" class="form-control" required>
+                    <option value="">{{ get_text('select') | default('Select') }}</option>
+                    <option value="student">{{ get_text('student') }}</option>
+                    <option value="teacher">{{ get_text('teacher') }}</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                {{ get_text('signup') }}
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            {{ get_text('already_have_account') | default('Already have an account?') }} <a href="{{ url_for('login') }}">{{ get_text('login') }}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('dashboard') }} - {{ get_text('app_name') }}{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1>{{ get_text('app_name') }}</h1>
+        <span class="tagline">{{ get_text('tagline') }}</span>
+    </div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('student_dashboard') }}" class="active"><i class="fas fa-home"></i> {{ get_text('dashboard') }}</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> {{ get_text('logout') }}</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.name[0] | upper }}</div>
+            <div class="user-details">
+                <div class="user-name">{{ user.name }}</div>
+                <div class="user-role">{{ get_text('student') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="language-selector">
+        <select id="language-selector">
+            <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+            <option value="te" {% if lang == 'te' %}selected{% endif %}>తెలుగు</option>
+            <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी</option>
+        </select>
+    </div>
+
+    <div class="page-header">
+        <h2>{{ get_text('welcome') }}, {{ user.name }}</h2>
+        <p>{{ get_text('student') }} {{ get_text('dashboard') }}</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ enrolled_courses | length }}</div>
+            <div class="stat-label">{{ get_text('enrolled_courses') }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ attendance_rate }}%</div>
+            <div class="stat-label">{{ get_text('attendance_rate') }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ badges | length }}</div>
+            <div class="stat-label">{{ get_text('badges') }}</div>
+        </div>
+    </div>
+
+    {% if badges %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('achievements') }}</h3>
+        </div>
+        <div class="badges-container">
+            {% for badge_name in badges %}
+            {% set badge_info = get_badge_details(badge_name) %}
+            <div class="badge" style="background-color: {{ badge_info.color }};">
+                <span class="badge-icon">🏆</span>
+                <span>{{ badge_name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if recommendations %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('recommended_for_you') }}</h3>
+        </div>
+        {% for rec in recommendations %}
+        <div class="recommendation-box {{ rec.level_class }}">
+            <div class="recommendation-level">{{ rec.level }}</div>
+            <div class="recommendation-message">{{ rec.message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('enrolled_courses') }}</h3>
+        </div>
+        {% if enrolled_courses %}
+        <div class="courses-grid">
+            {% for course in enrolled_courses %}
+            <div class="course-card">
+                <div class="course-subject">{{ course.subject }}</div>
+                <div class="course-title">{{ course.name }}</div>
+                <div class="course-description">{{ course.description or get_text('no_description') | default('No description available') }}</div>
+                <div class="course-meta">
+                    <span>{{ get_text('enrolled') }}</span>
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm btn-outline">{{ get_text('view') }}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-content">
+            <div class="no-content-icon">📚</div>
+            <p>{{ get_text('no_courses') }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('courses') }} - {{ get_text('enroll') }}</h3>
+        </div>
+        {% if available_courses %}
+        <div class="courses-grid">
+            {% for course in available_courses %}
+            <div class="course-card">
+                <div class="course-subject">{{ course.subject }}</div>
+                <div class="course-title">{{ course.name }}</div>
+                <div class="course-description">{{ course.description or get_text('no_description') | default('No description available') }}</div>
+                <form method="POST" action="{{ url_for('enroll', course_id=course.id) }}" style="margin-top: 16px;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">{{ get_text('enroll') }}</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-content">
+            <p>{{ get_text('no_courses') }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

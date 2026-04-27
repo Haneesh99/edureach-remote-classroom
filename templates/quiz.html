@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('quiz') }} - {{ course.name }} - {{ get_text('app_name') }}{% endblock %}
+
+{% block body %}
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1>{{ get_text('app_name') }}</h1>
+        <span class="tagline">{{ get_text('tagline') }}</span>
+    </div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('student_dashboard') }}"><i class="fas fa-home"></i> {{ get_text('dashboard') }}</a></li>
+        <li><a href="{{ url_for('course_detail', course_id=course.id) }}"><i class="fas fa-arrow-left"></i> {{ get_text('back') }} {{ get_text('to') | default('to') }} {{ get_text('course') | default('Course') }}</a></li>
+        <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> {{ get_text('logout') }}</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.name[0] | upper }}</div>
+            <div class="user-details">
+                <div class="user-name">{{ user.name }}</div>
+                <div class="user-role">{{ get_text('student') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="language-selector">
+        <select id="language-selector">
+            <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+            <option value="te" {% if lang == 'te' %}selected{% endif %}>తెలుగు</option>
+            <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी</option>
+        </select>
+    </div>
+
+    <div class="page-header">
+        <h2>{{ get_text('quiz') }}: {{ course.name }}</h2>
+        <p>{{ course.subject }}</p>
+    </div>
+
+    {% if result %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('score') }}: {{ result.score }}/{{ result.total }}</h3>
+        </div>
+        <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 3rem; font-weight: 700; color: var(--primary-color); margin-bottom: 16px;">
+                {{ result.percentage }}%
+            </div>
+            <p style="color: var(--text-medium); margin-bottom: 24px;">
+                {{ result.recommendation.message }}
+            </p>
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary">{{ get_text('back') }} {{ get_text('to') | default('to') }} {{ get_text('dashboard') }}</a>
+        </div>
+    </div>
+    {% else %}
+    {% if questions %}
+    <form method="POST" action="{{ url_for('submit_quiz', course_id=course.id) }}" onsubmit="return validateQuizForm()">
+        {% for question in questions %}
+        <div class="quiz-question" data-question="{{ question.id }}">
+            <div class="quiz-question-text">
+                <strong>{{ get_text('question') }} {{ loop.index }}:</strong> {{ question.question }}
+            </div>
+            <div class="quiz-options">
+                <label class="quiz-option">
+                    <input type="radio" name="q{{ question.id }}" value="a">
+                    <span>{{ question.option_a }}</span>
+                </label>
+                <label class="quiz-option">
+                    <input type="radio" name="q{{ question.id }}" value="b">
+                    <span>{{ question.option_b }}</span>
+                </label>
+                <label class="quiz-option">
+                    <input type="radio" name="q{{ question.id }}" value="c">
+                    <span>{{ question.option_c }}</span>
+                </label>
+                <label class="quiz-option">
+                    <input type="radio" name="q{{ question.id }}" value="d">
+                    <span>{{ question.option_d }}</span>
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem;">
+            {{ get_text('submit') }} {{ get_text('quiz') }}
+        </button>
+    </form>
+    {% else %}
+    <div class="card">
+        <div class="no-content">
+            <div class="no-content-icon">❓</div>
+            <p>{{ get_text('no_questions') | default('No quiz questions available for this course.') }}</p>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
