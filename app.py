@@ -262,6 +262,7 @@ def course_detail(course_id):
     announcements = db.get_announcements_by_course(course_id)
     teacher = db.get_user_by_id(course['teacher_id'])
     students = db.get_enrolled_students(course_id)
+    quiz_questions = db.get_quiz_questions_by_course(course_id)
     
     # Check if student has submitted each assignment
     submitted_assignments = set()
@@ -281,6 +282,7 @@ def course_detail(course_id):
                          announcements=announcements,
                          teacher=teacher,
                          students=students,
+                         quiz_questions=quiz_questions,
                          submitted_assignments=submitted_assignments,
                          today=date.today().isoformat())
 
@@ -469,6 +471,38 @@ def post_announcement(course_id):
     
     db.create_announcement(course_id, message)
     flash('Announcement posted successfully!', 'success')
+    return redirect(url_for('course_detail', course_id=course_id))
+
+
+@app.route('/create_quiz/<int:course_id>', methods=['POST'])
+@login_required
+def create_quiz(course_id):
+    if not g.user.is_teacher():
+        flash('Only teachers can create quizzes.', 'error')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    course = db.get_course_by_id(course_id)
+    if not course or course['teacher_id'] != g.user_id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    
+    question = request.form.get('question', '').strip()
+    option_a = request.form.get('option_a', '').strip()
+    option_b = request.form.get('option_b', '').strip()
+    option_c = request.form.get('option_c', '').strip()
+    option_d = request.form.get('option_d', '').strip()
+    correct_option = request.form.get('correct_option', '').strip()
+    
+    if not all([question, option_a, option_b, option_c, option_d, correct_option]):
+        flash('All fields are required to create a quiz question.', 'error')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    if correct_option not in ('a', 'b', 'c', 'd'):
+        flash('Correct option must be a, b, c, or d.', 'error')
+        return redirect(url_for('course_detail', course_id=course_id))
+    
+    db.add_quiz_question(course_id, question, option_a, option_b, option_c, option_d, correct_option)
+    flash('Quiz question added successfully!', 'success')
     return redirect(url_for('course_detail', course_id=course_id))
 
 

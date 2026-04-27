@@ -224,15 +224,86 @@
     </div>
     {% endif %}
 
+    {% if user.is_teacher() and user.id == course.teacher_id %}
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ get_text('create_quiz') | default('Create Quiz') }}</h3>
+            <button class="btn btn-sm btn-primary" onclick="document.getElementById('quiz-form').style.display='block'">{{ get_text('add_question') | default('Add Question') }}</button>
+        </div>
+        
+        {% if quiz_questions %}
+        <div style="margin-bottom: 24px;">
+            <h4 style="margin-bottom: 16px;">{{ get_text('existing_questions') | default('Existing Questions') }} ({{ quiz_questions | length }})</h4>
+            {% for q in quiz_questions %}
+            <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 12px; background-color: var(--row-alt);">
+                <p style="font-weight: 600; margin-bottom: 8px;">{{ loop.index }}. {{ q.question }}</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9rem; color: var(--text-medium);">
+                    <span>a) {{ q.option_a }}</span>
+                    <span>b) {{ q.option_b }}</span>
+                    <span>c) {{ q.option_c }}</span>
+                    <span>d) {{ q.option_d }}</span>
+                </div>
+                <p style="margin-top: 8px; font-size: 0.85rem; color: var(--primary-color);">
+                    {{ get_text('correct_answer') | default('Correct answer') }}: {{ q.correct_option | upper }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form id="quiz-form" method="POST" action="{{ url_for('create_quiz', course_id=course.id) }}" style="display: none; padding-top: 24px; border-top: 1px solid var(--border-color);">
+            <div class="form-group">
+                <label for="question">{{ get_text('question') }}</label>
+                <textarea id="question" name="question" class="form-control" rows="2" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="option_a">{{ get_text('option_a') }}</label>
+                <input type="text" id="option_a" name="option_a" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="option_b">{{ get_text('option_b') }}</label>
+                <input type="text" id="option_b" name="option_b" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="option_c">{{ get_text('option_c') }}</label>
+                <input type="text" id="option_c" name="option_c" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="option_d">{{ get_text('option_d') }}</label>
+                <input type="text" id="option_d" name="option_d" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="correct_option">{{ get_text('correct_option') }}</label>
+                <select id="correct_option" name="correct_option" class="form-control" required>
+                    <option value="">{{ get_text('select') | default('Select correct answer') }}</option>
+                    <option value="a">A</option>
+                    <option value="b">B</option>
+                    <option value="c">C</option>
+                    <option value="d">D</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">{{ get_text('add_question') | default('Add Question') }}</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('quiz-form').style.display='none'">{{ get_text('cancel') }}</button>
+        </form>
+    </div>
+    {% endif %}
+
     {% if user.is_student() %}
     <div class="card">
         <div class="card-header">
             <h3>{{ get_text('quiz') }}</h3>
         </div>
+        {% if quiz_questions %}
         <div style="text-align: center; padding: 40px;">
-            <p style="margin-bottom: 24px;">{{ get_text('take_quiz') }} {{ get_text('for') | default('for') }} {{ course.name }}</p>
+            <p style="margin-bottom: 16px;">{{ get_text('quiz_available') | default('Quiz Available') }}: {{ quiz_questions | length }} {{ get_text('questions') | default('questions') }}</p>
+            <p style="margin-bottom: 24px; color: var(--text-light);">{{ get_text('take_quiz_for') | default('Take quiz for') }} {{ course.name }}</p>
             <a href="{{ url_for('quiz', course_id=course.id) }}" class="btn btn-primary">{{ get_text('take_quiz') }}</a>
         </div>
+        {% else %}
+        <div class="no-content">
+            <p>{{ get_text('no_quiz') | default('No quiz available yet for this course.') }}</p>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 </div>
