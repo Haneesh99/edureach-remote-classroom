@@ -236,7 +236,14 @@
             <h4 style="margin-bottom: 16px;">{{ get_text('existing_questions') | default('Existing Questions') }} ({{ quiz_questions | length }})</h4>
             {% for q in quiz_questions %}
             <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 12px; background-color: var(--row-alt);">
-                <p style="font-weight: 600; margin-bottom: 8px;">{{ loop.index }}. {{ q.question }}</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <p style="font-weight: 600; margin: 0;">{{ loop.index }}. {{ q.question }}</p>
+                    <form method="POST" action="{{ url_for('delete_quiz', question_id=q.id) }}" onsubmit="return confirm('{{ get_text('confirm_delete') | default('Are you sure you want to delete this question?') }}');" style="margin-left: 8px;">
+                        <button type="submit" class="btn btn-sm btn-danger" title="{{ get_text('delete') | default('Delete') }}">
+                            <i class="fas fa-trash-alt"></i> {{ get_text('delete') | default('Delete') }}
+                        </button>
+                    </form>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9rem; color: var(--text-medium);">
                     <span>a) {{ q.option_a }}</span>
                     <span>b) {{ q.option_b }}</span>

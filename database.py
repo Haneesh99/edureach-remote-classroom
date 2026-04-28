@@ -456,6 +456,27 @@ class Database:
         conn.close()
         return [dict(row) for row in rows]
     
+    def get_quiz_question_by_id(self, question_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT * FROM quiz_questions WHERE id = ?',
+            (question_id,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+    
+    def delete_quiz_question(self, question_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'DELETE FROM quiz_questions WHERE id = ?',
+            (question_id,)
+        )
+        conn.commit()
+        conn.close()
+    
     def save_quiz_result(self, student_id, course_id, score, total):
         conn = self.get_connection()
         cursor = conn.cursor()

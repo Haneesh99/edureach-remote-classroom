@@ -506,6 +506,31 @@ def create_quiz(course_id):
     return redirect(url_for('course_detail', course_id=course_id))
 
 
+@app.route('/quiz/delete/<int:question_id>', methods=['POST'])
+@login_required
+def delete_quiz(question_id):
+    if not g.user.is_teacher():
+        flash('Only teachers can delete quiz questions.', 'error')
+        return redirect(url_for('index'))
+    
+    # Get the question to find its course
+    question = db.get_quiz_question_by_id(question_id)
+    if not question:
+        flash('Question not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    
+    # Verify the teacher owns the course
+    course = db.get_course_by_id(question['course_id'])
+    if not course or course['teacher_id'] != g.user_id:
+        flash('Access denied. You can only delete questions from your own courses.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    
+    # Delete the question
+    db.delete_quiz_question(question_id)
+    flash('Quiz question deleted successfully!', 'success')
+    return redirect(url_for('course_detail', course_id=question['course_id']))
+
+
 @app.route('/quiz/<int:course_id>')
 @login_required
 def quiz(course_id):
